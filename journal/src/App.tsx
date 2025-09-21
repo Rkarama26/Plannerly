@@ -14,11 +14,14 @@ import TaskView from './components/tasks/TaskView'
 import MoodView from './components/mood/MoodView'
 import { GoalsView } from './components/goals/GoalsView'
 import { JournalView } from './components/journal/JournalView'
+import { LandingPage } from './components/landingpage/LandingPage'
 
-
+interface AuthPageProps {
+  mode: "login" | "register"
+}
 //fallback auth page
-function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true)
+function AuthPage({ mode }: AuthPageProps) {
+  const [isLogin, setIsLogin] = useState(mode === "login")
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -107,28 +110,34 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (!user) {
-    return <AuthPage />
-  }
 
+  if (!user) {
+    // Redirect to login if user is not authenticated
+    return <Navigate to="/login" replace />;
+  }
   return <Layout>{children}</Layout>
 }
 
 
 function App() {
+
+  const navigate = (path: string) => {
+    window.history.pushState({}, '', path);
+    const navEvent = new PopStateEvent('popstate');
+    window.dispatchEvent(navEvent);
+  }
   return (
     <>
 
       <Routes>
-        <Route path="/login" element={<AuthPage />} />
         <Route
           path="/"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
+          element={<LandingPage onGetStarted={() => navigate("/register")}
+            onSignIn={() => navigate("/login")} />}
         />
+
+        <Route path="/login" element={<AuthPage mode="login" />} />
+        <Route path="/register" element={<AuthPage mode="register" />} />
         <Route
           path="/dashboard"
           element={
