@@ -1,17 +1,22 @@
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import { LoginForm } from './components/auth/LoginForm'
 import { RegisterForm } from './components/auth/RegisterForm'
 import { useAuth } from './context/AuthContext'
-import { Moon, Sidebar, Sun } from 'lucide-react'
+import { Moon, Sun } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { Navigate, Route, Routes } from 'react-router'
 import { Dashboard } from './components/dashboard/Dashboard'
 import { CalendarView } from './components/calender/CalendarView'
+import { Sidebar } from './components/layout/Sidebar'
+import TaskView from './components/tasks/TaskView'
+import MoodView from './components/mood/MoodView'
+import { GoalsView } from './components/goals/GoalsView'
+import { JournalView } from './components/journal/JournalView'
 
 
-
+//fallback auth page
 function AuthPage() {
   const [isLogin, setIsLogin] = useState(true)
 
@@ -28,12 +33,35 @@ function AuthPage() {
   )
 }
 
+//theme toggle
+
 function Layout({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(false)
+  const [isDark, setIsDark] = useState(true) //dark mode by default
+
+  // Load theme preference from localStorage on mount
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme")
+    if (storedTheme === "dark") {
+      setIsDark(true)
+      document.documentElement.classList.add("dark")
+    } else {
+      setIsDark(false)
+      document.documentElement.classList.remove("dark")
+    }
+  }, [])
 
   const toggleTheme = () => {
-    setIsDark(!isDark)
-    document.documentElement.classList.toggle("dark")
+    setIsDark(prev => {
+      const newTheme = !prev
+      if (newTheme) {
+        document.documentElement.classList.add("dark")
+        localStorage.setItem("theme", "dark")
+      } else {
+        document.documentElement.classList.remove("dark")
+        localStorage.setItem("theme", "light")
+      }
+      return newTheme
+    })
   }
 
   return (
@@ -64,6 +92,7 @@ function Layout({ children }: { children: React.ReactNode }) {
     </div>
   )
 }
+
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -114,6 +143,38 @@ function App() {
           element={
             <ProtectedRoute>
               <CalendarView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <TaskView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/journal"
+          element={
+            <ProtectedRoute>
+              <JournalView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/goals"
+          element={
+            <ProtectedRoute>
+              <GoalsView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mood"
+          element={
+            <ProtectedRoute>
+              <MoodView />
             </ProtectedRoute>
           }
         />
