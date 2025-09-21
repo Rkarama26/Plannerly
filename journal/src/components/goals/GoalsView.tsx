@@ -122,7 +122,6 @@ export function GoalsView() {
       const newGoal = {
         ...goalData,
         userId: user.id,
-        id: Date.now().toString(),
         currentValue: 0,
         completed: false,
         createdAt: new Date().toISOString(),
@@ -346,7 +345,7 @@ export function GoalsView() {
 interface GoalCardProps {
   goal: Goal
   onEdit: (goal: Goal) => void
-  onDelete: (goalId: string) => void
+  onDelete?: (goalId: string) => void
   onProgressUpdate: (goal: Goal, newValue: number) => void
   getProgressPercentage: (goal: Goal) => number
   getProgressColor: (percentage: number) => string
@@ -356,10 +355,8 @@ interface GoalCardProps {
 function GoalCard({
   goal,
   onEdit,
-  onDelete,
   onProgressUpdate,
   getProgressPercentage,
-  getProgressColor,
   getDeadlineStatus,
 }: GoalCardProps) {
   const [isUpdating, setIsUpdating] = useState(false)

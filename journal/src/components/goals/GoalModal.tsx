@@ -131,7 +131,7 @@ export function GoalModal({ isOpen, onClose, goal, onSave, onDelete }: GoalModal
                                 type="number"
                                 value={targetValue}
                                 onChange={(e) => setTargetValue(e.target.value)}
-                                placeholder="12"
+                                placeholder="target"
                                 min="0"
                                 step="0.1"
                             />

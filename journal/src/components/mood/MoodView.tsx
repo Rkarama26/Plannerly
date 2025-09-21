@@ -11,7 +11,7 @@ import { MoodChart } from "./MoodChart"
 import { HabitModal } from "./HabitModal"
 
 
-export function MoodView() {
+export default function MoodView() {
   const { user } = useAuth()
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([])
   const [habits, setHabits] = useState<Habit[]>([])
@@ -399,10 +399,10 @@ interface HabitCardProps {
   habit: Habit
   onToggle: (habit: Habit) => void
   onEdit: (habit: Habit) => void
-  onDelete: (habitId: string) => void
+  onDelete?: (habitId: string) => void
 }
 
-function HabitCard({ habit, onToggle, onEdit, onDelete }: HabitCardProps) {
+function HabitCard({ habit, onToggle, onEdit }: HabitCardProps) {
   const today = new Date().toISOString().split("T")[0]
   const isCompletedToday = habit.completedDates.includes(today)
 
@@ -451,13 +451,12 @@ function HabitCard({ habit, onToggle, onEdit, onDelete }: HabitCardProps) {
             return (
               <div
                 key={date}
-                className={`w-6 h-6 rounded-sm border-2 flex items-center justify-center text-xs ${
-                  isCompleted
-                    ? "bg-green-500 border-green-500 text-white"
-                    : isToday
-                      ? "border-primary bg-primary/10"
-                      : "border-gray-200 bg-gray-50"
-                }`}
+                className={`w-6 h-6 rounded-sm border-2 flex items-center justify-center text-xs ${isCompleted
+                  ? "bg-green-500 border-green-500 text-white"
+                  : isToday
+                    ? "border-primary bg-primary/10"
+                    : "border-gray-200 bg-gray-50"
+                  }`}
               >
                 {isCompleted && "✓"}
               </div>

@@ -7,6 +7,8 @@ import { Calendar, CheckCircle, Target, BookOpen, TrendingUp, Flame, Clock, Plus
 import { format, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from "date-fns"
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts"
 import { useAuth } from "@/context/AuthContext"
+import { firebaseService } from "@/lib/firebase"
+import { useNavigate } from "react-router"
 
 interface DashboardStats {
     tasksCompleted: number
@@ -16,14 +18,6 @@ interface DashboardStats {
     goalsProgress: number
     currentStreak: number
     weeklyMood: number[]
-}
-
-interface RecentActivity {
-    id: string
-    type: "task" | "event" | "journal" | "goal" | "habit"
-    title: string
-    timestamp: Date
-    status?: string
 }
 
 export function Dashboard() {
@@ -37,10 +31,16 @@ export function Dashboard() {
         currentStreak: 0,
         weeklyMood: [],
     })
-    const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
+
+    console.log("User:", user)
     const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
     const [recentTasks, setRecentTasks] = useState<any[]>([])
     const [activeGoals, setActiveGoals] = useState<any[]>([])
+    const navigate = useNavigate()
+    const handleNavigate = (path: string) => {
+        navigate(`/${path}`)
+    }
+
 
     useEffect(() => {
         if (user) {
@@ -51,21 +51,29 @@ export function Dashboard() {
     const loadDashboardData = async () => {
         try {
             // Load data from localStorage (simulating Firebase data)
-            const tasks = JSON.parse(localStorage.getItem(`tasks_${user?.id}`) || "[]")
-            const events = JSON.parse(localStorage.getItem(`events_${user?.id}`) || "[]")
-            const journals = JSON.parse(localStorage.getItem(`journals_${user?.id}`) || "[]")
-            const goals = JSON.parse(localStorage.getItem(`goals_${user?.id}`) || "[]")
-            const habits = JSON.parse(localStorage.getItem(`habits_${user?.id}`) || "[]")
-            const moods = JSON.parse(localStorage.getItem(`moods_${user?.id}`) || "[]")
+            const tasks = await firebaseService.getUserTasks(user?.id || "")
+            //  console.log("Loaded tasks:", tasks)
+            const events = await firebaseService.getUserEvents(user?.id || "")
+            console.log("Loaded events:", events)
+            const journals = await firebaseService.getUserJournalEntries(user?.id || "")
+            // console.log("Loaded journals:", journals)
+            const goals = await firebaseService.getUserGoals(user?.id || "")
+            // console.log("Loaded goals:", goals)
+            const habits = await firebaseService.getUserHabits(user?.id || "")
+            // console.log("Loaded habits:", habits)
+            const moods = await firebaseService.getUserMoodEntries(user?.id || "")
+            // console.log("Loaded moods:", moods)
 
             // Calculate stats
             const completedTasks = tasks.filter((task: any) => task.completed).length
             const today = new Date()
+            // normalize to midnight
+            today.setHours(0, 0, 0, 0)
             const weekStart = startOfWeek(today)
             const weekEnd = endOfWeek(today)
 
             const upcomingEventsCount = events.filter((event: any) => {
-                const eventDate = new Date(event.date)
+                const eventDate = new Date(event.startDate)
                 return eventDate >= today && eventDate <= addDays(today, 7)
             }).length
 
@@ -108,10 +116,14 @@ export function Dashboard() {
 
             // Set upcoming events
             const nextEvents = events
-                .filter((event: any) => new Date(event.date) >= today)
-                .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                .filter((event: any) => new Date(event.endDate) >= today) // ✅ include ongoing & future
+                .sort(
+                    (a: any, b: any) =>
+                        new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+                )
                 .slice(0, 3)
             setUpcomingEvents(nextEvents)
+            console.log("Upcoming events set:", nextEvents)
 
             // Set recent tasks
             const recentTasksList = tasks
@@ -259,7 +271,8 @@ export function Dashboard() {
                                 <CheckCircle className="h-5 w-5" />
                                 Priority Tasks
                             </CardTitle>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm"
+                                onClick={() => handleNavigate("tasks")}>
                                 View All <ArrowRight className="h-4 w-4 ml-1" />
                             </Button>
                         </CardHeader>
@@ -301,8 +314,9 @@ export function Dashboard() {
                                 <Calendar className="h-5 w-5" />
                                 Upcoming Events
                             </CardTitle>
-                            <Button variant="ghost" size="sm">
-                                <Plus className="h-4 w-4" />
+                            <Button variant="ghost" size="sm"
+                                onClick={() => handleNavigate("calendar")}>
+                                View All <ArrowRight className="h-4 w-4 ml-1" />
                             </Button>
                         </CardHeader>
                         <CardContent>
@@ -314,7 +328,7 @@ export function Dashboard() {
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-medium truncate">{event.title}</p>
                                                 <p className="text-sm text-muted-foreground">
-                                                    {getEventDateLabel(event.date)}
+                                                    {getEventDateLabel(event.startDate)}
                                                     {event.time && ` at ${event.time}`}
                                                 </p>
                                             </div>
@@ -334,8 +348,8 @@ export function Dashboard() {
                                 <Target className="h-5 w-5" />
                                 Active Goals
                             </CardTitle>
-                            <Button variant="ghost" size="sm">
-                                <Plus className="h-4 w-4" />
+                            <Button variant="ghost" size="sm" onClick={() => handleNavigate("goals")}>
+                                View All <ArrowRight className="h-4 w-4 ml-1" />
                             </Button>
                         </CardHeader>
                         <CardContent>
@@ -370,19 +384,23 @@ export function Dashboard() {
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 gap-2">
-                                <Button variant="outline" size="sm" className="h-auto p-3 flex flex-col gap-1 bg-transparent">
+                                <Button variant="outline" size="sm" className="h-auto p-3 flex flex-col gap-1 bg-transparent"
+                                    onClick={() => handleNavigate("tasks")}>
                                     <Plus className="h-4 w-4" />
                                     <span className="text-xs">Add Task</span>
                                 </Button>
-                                <Button variant="outline" size="sm" className="h-auto p-3 flex flex-col gap-1 bg-transparent">
+                                <Button variant="outline" size="sm" className="h-auto p-3 flex flex-col gap-1 bg-transparent"
+                                    onClick={() => handleNavigate("calendar")}>
                                     <Calendar className="h-4 w-4" />
                                     <span className="text-xs">New Event</span>
                                 </Button>
-                                <Button variant="outline" size="sm" className="h-auto p-3 flex flex-col gap-1 bg-transparent">
+                                <Button variant="outline" size="sm" className="h-auto p-3 flex flex-col gap-1 bg-transparent"
+                                    onClick={() => handleNavigate("journal")}>
                                     <BookOpen className="h-4 w-4" />
                                     <span className="text-xs">Write Journal</span>
                                 </Button>
-                                <Button variant="outline" size="sm" className="h-auto p-3 flex flex-col gap-1 bg-transparent">
+                                <Button variant="outline" size="sm" className="h-auto p-3 flex flex-col gap-1 bg-transparent"
+                                    onClick={() => handleNavigate("goals")}>
                                     <Target className="h-4 w-4" />
                                     <span className="text-xs">Set Goal</span>
                                 </Button>

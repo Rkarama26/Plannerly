@@ -76,12 +76,7 @@ export function CalendarView() {
         setCurrentDate(newDate)
     }
 
-    const getEventsForDate = (date: Date) => {
-        return events.filter((event) => {
-            const eventDate = new Date(event.startDate)
-            return eventDate.toDateString() === date.toDateString()
-        })
-    }
+
 
     const formatDateHeader = () => {
         const options: Intl.DateTimeFormatOptions =
@@ -179,6 +174,12 @@ export function CalendarView() {
         </div>
     )
 }
+const getEventsForDate = (events: Event[], date: Date) => {
+    return events.filter((event) => {
+        const eventDate = new Date(event.startDate)
+        return eventDate.toDateString() === date.toDateString()
+    })
+}
 
 // Month View Component
 function MonthView({
@@ -192,8 +193,8 @@ function MonthView({
     onEventClick: (event: Event) => void
     onDateClick: (event?: Event, date?: Date) => void
 }) {
+
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
-    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
     const startOfWeek = new Date(startOfMonth)
     startOfWeek.setDate(startOfMonth.getDate() - startOfMonth.getDay())
 
@@ -221,10 +222,7 @@ function MonthView({
             {days.map((day, index) => {
                 const isCurrentMonth = day.getMonth() === currentDate.getMonth()
                 const isToday = day.toDateString() === new Date().toDateString()
-                const dayEvents = events.filter((event) => {
-                    const eventDate = new Date(event.startDate)
-                    return eventDate.toDateString() === day.toDateString()
-                })
+                const dayEvents = getEventsForDate(events, day)
 
                 return (
                     <div
@@ -314,11 +312,9 @@ function WeekView({
 
                     {/* Day columns */}
                     {weekDays.map((day) => {
-                        const dayEvents = events.filter((event) => {
-                            const eventDate = new Date(event.startDate)
-                            const eventHour = eventDate.getHours()
-                            return eventDate.toDateString() === day.toDateString() && eventHour === hour
-                        })
+                        const dayEvents = getEventsForDate(events, day).filter(
+                            (event) => new Date(event.startDate).getHours() === hour
+                        )
 
                         return (
                             <div
@@ -362,10 +358,8 @@ function DayView({
     onEventClick: (event: Event) => void
 }) {
     const hours = Array.from({ length: 24 }, (_, i) => i)
-    const dayEvents = events.filter((event) => {
-        const eventDate = new Date(event.startDate)
-        return eventDate.toDateString() === currentDate.toDateString()
-    })
+    const dayEvents = getEventsForDate(events, currentDate)
+
 
     return (
         <div className="space-y-0">

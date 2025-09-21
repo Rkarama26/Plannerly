@@ -6,7 +6,6 @@ import {
     CheckSquare,
     BookOpen,
     Target,
-    TrendingUp,
     Heart,
     BarChart3,
     Settings,
