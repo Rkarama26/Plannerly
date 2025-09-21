@@ -1,69 +1,42 @@
-# React + TypeScript + Vite
+# Plannerly
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Plannerly** is your smart companion for planning, organizing, and achieving daily goals. Simplify your tasks, track your progress, and stay on top of your schedule with ease.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Create, update, and delete goals
+- Track progress with interactive progress bars
+- Filter goals by category, status, and deadlines
+- Set deadlines and reminders
+- Search and filter tasks/goals easily
+- Manage events and upcoming schedules
 
-## Expanding the ESLint configuration
+## Demo
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+[Live Demo](to be added soon)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Tech Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+**Frontend:**
+- **React** - JavaScript library for building user interfaces
+- **TypeScript** - Typed superset of JavaScript for safer code
+- **Tailwind CSS** - Utility-first CSS framework for rapid UI development
+- **Vite** - Build tool for fast development and optimized production
+- **React Context API** - For simple global state management (authentication & tasks)
+- **Lucide React** - Icon library for clean, modern icons
+- **Firebase Realtime Database** - Backend-less data storage and retrieval  
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+**UI Components:**
+- **ShadCN/UI** - Pre-built modern components like buttons, cards, dialogs, badges
+- **Custom Modals & Cards** - For goal creation, editing, and displaying stats
+- **Input, Textarea, Badge, Progress** - For interactive goal tracking
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+**Backend / Services:**
+- **Firebase Realtime Database** (No authentication required)  
+- CRUD operations for tasks, events, and goals using Firebase endpoints
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Installation
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. Clone the repository:
+```bash
+git clone https://github.com/Rkarama26/Plannerly
