@@ -34,7 +34,6 @@ function AuthPage() {
 }
 
 //theme toggle
-
 function Layout({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(true) //dark mode by default
 
@@ -74,7 +73,7 @@ function Layout({ children }: { children: React.ReactNode }) {
           <header className="bg-card border-b border-border p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div className="ml-12 md:ml-0">
-                <h2 className="text-2xl font-bold capitalize">Digital Planner</h2>
+                <h2 className="text-2xl font-bold capitalize">Plannerly</h2>
                 <p className="text-muted-foreground">Organize your life and boost productivity</p>
               </div>
               <Button variant="ghost" size="icon" onClick={toggleTheme}>

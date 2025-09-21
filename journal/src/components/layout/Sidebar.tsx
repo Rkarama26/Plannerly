@@ -56,7 +56,7 @@ export function Sidebar() {
                 <div className="flex flex-col h-full">
                     {/* Header */}
                     <div className="p-6 border-b border-border">
-                        <h1 className="text-xl font-bold text-primary">Digital Planner</h1>
+                        <h1 className="text-xl font-bold text-primary">Plannerly</h1>
                         <p className="text-sm text-muted-foreground mt-1">Welcome, {user?.name}</p>
                     </div>
 

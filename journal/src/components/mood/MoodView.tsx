@@ -5,11 +5,10 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { firebaseService } from "@/lib/firebase"
 import type { MoodEntry, Habit } from "@/lib/types"
-import { Heart, Plus, TrendingUp, Calendar, Flame } from "lucide-react"
+import { Heart, Plus, TrendingUp, Calendar, Flame, Trash2 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { MoodChart } from "./MoodChart"
 import { HabitModal } from "./HabitModal"
-
 
 export default function MoodView() {
   const { user } = useAuth()
@@ -75,14 +74,24 @@ export default function MoodView() {
   const handleHabitSave = async (habitData: Partial<Habit>) => {
     if (!user) return
 
-    if (selectedHabit) {
-      const updatedHabit = { ...selectedHabit, ...habitData, updatedAt: new Date().toISOString() }
-      await firebaseService.put(`habits/${selectedHabit.id}`, updatedHabit)
+    if (habitData.id || selectedHabit) {
+      // Editing existing habit
+      const habitToUpdate = selectedHabit || habits.find((h) => h.id === habitData.id)
+      if (habitToUpdate) {
+        const updatedHabit = {
+          ...habitToUpdate,
+          ...habitData,
+          id: habitToUpdate.id, // Ensure ID is preserved
+          updatedAt: new Date().toISOString(),
+        }
+        await firebaseService.put(`habits/${habitToUpdate.id}`, updatedHabit)
+      }
     } else {
+      // Creating new habit
       const newHabit = {
         ...habitData,
+        id: Date.now().toString(), // Generate new ID
         userId: user.id,
-        id: Date.now().toString(),
         streak: 0,
         completedDates: [],
         createdAt: new Date().toISOString(),
@@ -105,25 +114,28 @@ export default function MoodView() {
 
   const handleHabitToggle = async (habit: Habit) => {
     const today = new Date().toISOString().split("T")[0]
-    const isCompletedToday = habit.completedDates.includes(today)
+
+    const completedDates = habit?.completedDates ?? []
+    console.log("habits:", habit)
+    const isCompletedToday = completedDates.includes(today)
 
     let newCompletedDates: string[]
-    let newStreak = habit.streak
+    let newStreak = habit.streak ?? 0
 
     if (isCompletedToday) {
       // Remove today's completion
-      newCompletedDates = habit.completedDates.filter((date) => date !== today)
-      newStreak = Math.max(0, habit.streak - 1)
+      newCompletedDates = completedDates.filter((date) => date !== today)
+      newStreak = Math.max(0, newStreak - 1)
     } else {
       // Add today's completion
-      newCompletedDates = [...habit.completedDates, today].sort()
+      newCompletedDates = [...completedDates, today].sort()
 
       // Calculate new streak
       const yesterday = new Date()
       yesterday.setDate(yesterday.getDate() - 1)
       const yesterdayStr = yesterday.toISOString().split("T")[0]
 
-      if (habit.completedDates.includes(yesterdayStr) || habit.streak === 0) {
+      if (completedDates.includes(yesterdayStr) || habit.streak === 0) {
         newStreak = habit.streak + 1
       } else {
         newStreak = 1 // Reset streak if there was a gap
@@ -185,7 +197,7 @@ export default function MoodView() {
     const activeStreaks = habits.filter((h) => h.streak > 0).length
     const completedToday = habits.filter((h) => {
       const today = new Date().toISOString().split("T")[0]
-      return h.completedDates.includes(today)
+      return (h.completedDates || []).includes(today)
     }).length
     const longestStreak = Math.max(...habits.map((h) => h.streak), 0)
 
@@ -402,9 +414,10 @@ interface HabitCardProps {
   onDelete?: (habitId: string) => void
 }
 
-function HabitCard({ habit, onToggle, onEdit }: HabitCardProps) {
+function HabitCard({ habit, onToggle, onEdit, onDelete }: HabitCardProps) {
   const today = new Date().toISOString().split("T")[0]
-  const isCompletedToday = habit.completedDates.includes(today)
+  const completedDates = habit.completedDates ?? []
+  const isCompletedToday = completedDates.includes(today)
 
   const getLastSevenDays = () => {
     const days = []
@@ -439,6 +452,16 @@ function HabitCard({ habit, onToggle, onEdit }: HabitCardProps) {
             <Button variant="ghost" size="sm" onClick={() => onEdit(habit)}>
               Edit
             </Button>
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(habit.id)}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
 
@@ -446,17 +469,18 @@ function HabitCard({ habit, onToggle, onEdit }: HabitCardProps) {
         <div className="flex items-center gap-1 mb-3">
           <span className="text-xs text-muted-foreground mr-2">Last 7 days:</span>
           {lastSevenDays.map((date) => {
-            const isCompleted = habit.completedDates.includes(date)
+            const isCompleted = completedDates.includes(date)
             const isToday = date === today
             return (
               <div
                 key={date}
-                className={`w-6 h-6 rounded-sm border-2 flex items-center justify-center text-xs ${isCompleted
-                  ? "bg-green-500 border-green-500 text-white"
-                  : isToday
-                    ? "border-primary bg-primary/10"
-                    : "border-gray-200 bg-gray-50"
-                  }`}
+                className={`w-6 h-6 rounded-sm border-2 flex items-center justify-center text-xs ${
+                  isCompleted
+                    ? "bg-green-500 border-green-500 text-white"
+                    : isToday
+                      ? "border-primary bg-primary/10"
+                      : "border-gray-200 bg-gray-50"
+                }`}
               >
                 {isCompleted && "✓"}
               </div>

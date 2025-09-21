@@ -47,6 +47,7 @@ export function HabitModal({ isOpen, onClose, habit, onSave, onDelete }: HabitMo
       name: name.trim(),
       description: description.trim() || undefined,
       frequency,
+      ...(habit && { id: habit.id }), // Include ID when editing
     }
 
     onSave(habitData)
@@ -86,8 +87,8 @@ export function HabitModal({ isOpen, onClose, habit, onSave, onDelete }: HabitMo
               list="common-habits"
             />
             <datalist id="common-habits">
-              {commonHabits.map((habitName) => (
-                <option key={habitName} value={habitName} />
+              {commonHabits.map((habitName, index) => (
+                <option key={`habit-${index}-${habitName}`} value={habitName} />
               ))}
             </datalist>
           </div>
@@ -126,7 +127,7 @@ export function HabitModal({ isOpen, onClose, habit, onSave, onDelete }: HabitMo
                   <div className="text-sm text-muted-foreground">Day Streak</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-primary">{habit.completedDates.length}</div>
+                  <div className="text-2xl font-bold text-primary">{habit.completedDates?.length ?? 0}</div>
                   <div className="text-sm text-muted-foreground">Total Completions</div>
                 </div>
               </div>
