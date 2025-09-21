@@ -29,7 +29,6 @@ export function Sidebar() {
         { id: "tasks", label: "Tasks", icon: CheckSquare, path: "/tasks" },
         { id: "journal", label: "Journal", icon: BookOpen, path: "/journal" },
         { id: "goals", label: "Goals", icon: Target, path: "/goals" },
-        { id: "habits", label: "Habits", icon: TrendingUp, path: "/habits" },
         { id: "mood", label: "Mood", icon: Heart, path: "/mood" },
     ]
 
