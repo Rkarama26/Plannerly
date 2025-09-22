@@ -35,7 +35,7 @@ export function JournalModal({ isOpen, onClose, entry, onSave, onDelete }: Journ
             setTitle(entry.title)
             setContent(entry.content)
             setMood(entry.mood)
-            setTags(entry.tags.join(", "))
+            setTags((entry.tags || []).join(", "))  
             setDate(entry.date.split("T")[0])
         } else {
             setTitle("")
@@ -259,7 +259,7 @@ export function JournalModal({ isOpen, onClose, entry, onSave, onDelete }: Journ
                         <Button variant="outline" onClick={onClose}>
                             Cancel
                         </Button>
-                        <Button onClick={handleSave} disabled={!title.trim() || !content.trim()}>
+                        <Button onClick={handleSave} disabled={!title.trim() || !content.trim() || !tags || !mood}>
                             {entry ? "Update" : "Save Entry"}
                         </Button>
                     </div>
