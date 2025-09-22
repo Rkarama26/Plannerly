@@ -36,7 +36,7 @@
 - CRUD operations for tasks, events, and goals using Firebase endpoints
 
 ## Dashboard Screenshots
-![Dashboard Screenshot](c:\Users\rv262\Downloads\dashboard.png)
+<img width="1575" height="886" alt="dashboard" src="https://github.com/user-attachments/assets/40d8da06-ec29-457b-badb-f68fdf897cb2" />
 
 ## Installation
 
