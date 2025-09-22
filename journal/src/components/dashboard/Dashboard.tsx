@@ -9,6 +9,21 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts"
 import { useAuth } from "@/context/AuthContext"
 import { firebaseService } from "@/lib/firebase"
 import { useNavigate } from "react-router"
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core'
+import {
+    SortableContext,
+    arrayMove,
+    useSortable,
+    verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+
 
 interface DashboardStats {
     tasksCompleted: number
@@ -19,7 +34,26 @@ interface DashboardStats {
     currentStreak: number
     weeklyMood: number[]
 }
+// Sortable Card Wrapper
+function SortableCard({ id, children }: { id: string; children: React.ReactNode }) {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    }
 
+    return (
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+            {children}
+        </div>
+    )
+}
+const defaultStatsOrder = [
+    "tasksCompleted",
+    "upcomingEvents",
+    "journalEntries",
+    "currentStreak",
+]
 export function Dashboard() {
     const { user } = useAuth()
     const [stats, setStats] = useState<DashboardStats>({
@@ -32,7 +66,25 @@ export function Dashboard() {
         weeklyMood: [],
     })
 
-    console.log("User:", user)
+    const [order, setOrder] = useState<string[]>(() => {
+        // Load saved order from localStorage
+        const saved = localStorage.getItem("statsOrder")
+        return saved ? JSON.parse(saved) : defaultStatsOrder
+    })
+
+    const sensors = useSensors(useSensor(PointerSensor))
+    const handleDragEnd = (event: any) => {
+        const { active, over } = event
+        if (active.id !== over.id) {
+            const oldIndex = order.indexOf(active.id)
+            const newIndex = order.indexOf(over.id)
+            const newOrder = arrayMove(order, oldIndex, newIndex)
+            setOrder(newOrder)
+            localStorage.setItem("statsOrder", JSON.stringify(newOrder))
+        }
+    }
+
+    //console.log("User:", user)
     const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
     const [recentTasks, setRecentTasks] = useState<any[]>([])
     const [activeGoals, setActiveGoals] = useState<any[]>([])
@@ -40,6 +92,8 @@ export function Dashboard() {
     const handleNavigate = (path: string) => {
         navigate(`/${path}`)
     }
+
+
 
 
     useEffect(() => {
@@ -185,55 +239,75 @@ export function Dashboard() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Tasks Completed</CardTitle>
-                        <CheckCircle className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.tasksCompleted}</div>
-                        <p className="text-xs text-muted-foreground">of {stats.totalTasks} total tasks</p>
-                        <Progress
-                            value={stats.totalTasks > 0 ? (stats.tasksCompleted / stats.totalTasks) * 100 : 0}
-                            className="mt-2"
-                        />
-                    </CardContent>
-                </Card>
+            <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+            >
+                <SortableContext items={order} strategy={verticalListSortingStrategy}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {order.map((key) => (
+                            <SortableCard key={key} id={key}>
+                                {key === "tasksCompleted" && (
+                                    <Card>
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardTitle className="text-sm font-medium">Tasks Completed</CardTitle>
+                                            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-2xl font-bold">{stats.tasksCompleted}</div>
+                                            <p className="text-xs text-muted-foreground">of {stats.totalTasks} total tasks</p>
+                                            <Progress
+                                                value={stats.totalTasks > 0 ? (stats.tasksCompleted / stats.totalTasks) * 100 : 0}
+                                                className="mt-2"
+                                            />
+                                        </CardContent>
+                                    </Card>
+                                )}
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Upcoming Events</CardTitle>
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.upcomingEvents}</div>
-                        <p className="text-xs text-muted-foreground">in the next 7 days</p>
-                    </CardContent>
-                </Card>
+                                {key === "upcomingEvents" && (
+                                    <Card>
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardTitle className="text-sm font-medium">Upcoming Events</CardTitle>
+                                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-2xl font-bold">{stats.upcomingEvents}</div>
+                                            <p className="text-xs text-muted-foreground">in the next 7 days</p>
+                                        </CardContent>
+                                    </Card>
+                                )}
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Journal Entries</CardTitle>
-                        <BookOpen className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.journalEntries}</div>
-                        <p className="text-xs text-muted-foreground">this week</p>
-                    </CardContent>
-                </Card>
+                                {key === "journalEntries" && (
+                                    <Card>
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardTitle className="text-sm font-medium">Journal Entries</CardTitle>
+                                            <BookOpen className="h-4 w-4 text-muted-foreground" />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-2xl font-bold">{stats.journalEntries}</div>
+                                            <p className="text-xs text-muted-foreground">this week</p>
+                                        </CardContent>
+                                    </Card>
+                                )}
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
-                        <Flame className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.currentStreak}</div>
-                        <p className="text-xs text-muted-foreground">days in a row</p>
-                    </CardContent>
-                </Card>
-            </div>
+                                {key === "currentStreak" && (
+                                    <Card>
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
+                                            <Flame className="h-4 w-4 text-muted-foreground" />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-2xl font-bold">{stats.currentStreak}</div>
+                                            <p className="text-xs text-muted-foreground">days in a row</p>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </SortableCard>
+                        ))}
+                    </div>
+                </SortableContext>
+            </DndContext>
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
