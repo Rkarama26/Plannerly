@@ -250,10 +250,15 @@ export function LandingPage({ onGetStarted, onSignIn }: LandingPageProps) {
             </div>
             <div className="relative">
               <img
-                src="/person-using-digital-planner-on-multiple-devices--.jpg"
+                src={
+                  isDark
+                    ? "/images/plannerly-inmultiple-devices-dark.jpg"
+                    : "/images/plannerly-inmultiple-devices-light.jpg"
+                }
                 alt="Cross-platform digital planner usage"
                 className="w-full h-auto rounded-lg shadow-xl"
               />
+
             </div>
           </div>
         </div>
