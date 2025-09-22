@@ -11,6 +11,7 @@ interface AuthContextType {
     login: (email: string, password: string) => Promise<boolean>
     register: (email: string, password: string, name: string) => Promise<boolean>
     logout: () => void
+    guestLogin: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -51,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     }
 
                     setUser(user)
-                    sessionStorage.setItem("user", JSON.stringify(user))
+                    localStorage.setItem("user", JSON.stringify(user))
                     navigate("/dashboard")
                     return true
                 }
@@ -96,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
 
                 setUser(user)
-                sessionStorage.setItem("user", JSON.stringify(user))
+                localStorage.setItem("user", JSON.stringify(user))
                 navigate("/dashboard")
                 return true
             }
@@ -112,11 +113,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Logout user
     const logout = () => {
         setUser(null)
-        sessionStorage.removeItem("user")
+        localStorage.removeItem("user")
+        localStorage.removeItem("isGuest")
+
         navigate("/login")
     }
 
-    return <AuthContext.Provider value={{ user, loading, login, register, logout }}>{children}</AuthContext.Provider>
+    const guestLogin = () => {
+        const guestUser = {
+            id: "guest",
+            name: "Guest User",
+            email: "guest@example.com",
+            isGuest: true,
+            createdAt: new Date().toISOString(),
+        };
+        setUser(guestUser);
+        localStorage.setItem("user", JSON.stringify(guestUser));
+        //  can detect guest vs real user
+        localStorage.setItem("isGuest", "true")
+    };
+
+    return <AuthContext.Provider value={{ user, loading, login, register, logout, guestLogin }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

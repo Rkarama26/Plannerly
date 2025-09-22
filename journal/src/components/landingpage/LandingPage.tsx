@@ -17,6 +17,8 @@ import {
   Moon,
   Sun,
 } from "lucide-react"
+import { useNavigate } from "react-router"
+import { useAuth } from "@/context/AuthContext"
 
 interface LandingPageProps {
   onGetStarted: () => void
@@ -25,7 +27,13 @@ interface LandingPageProps {
 
 export function LandingPage({ onGetStarted, onSignIn }: LandingPageProps) {
   const [isDark, setIsDark] = useState(false)
+  const { guestLogin } = useAuth()
+  const navigate = useNavigate()
 
+  const handleGuest = () => {
+    guestLogin()
+    navigate("/dashboard")
+  }
   const toggleTheme = () => {
     setIsDark(!isDark)
     document.documentElement.classList.toggle("dark")
@@ -131,8 +139,8 @@ export function LandingPage({ onGetStarted, onSignIn }: LandingPageProps) {
             solution.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={onGetStarted} className="text-lg px-8">
-              Start Planning Today
+            <Button size="lg" onClick={handleGuest} className="text-lg px-8">
+              Continue as Guest
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <Button size="lg" variant="outline" onClick={onSignIn}>
