@@ -13,7 +13,7 @@
 
 ## Demo
 
-[Live Demo](to be added soon)
+[Live Demo](https://68d115cd5aa956f1b7f0c032--singular-cat-c6bef3.netlify.app/)
 
 ## Tech Stack
 
@@ -35,8 +35,13 @@
 - **Firebase Realtime Database** (No authentication required)  
 - CRUD operations for tasks, events, and goals using Firebase endpoints
 
+## Dashboard Screenshots
+![Dashboard Screenshot](c:\Users\rv262\Downloads\dashboard.png)
+
 ## Installation
 
 1. Clone the repository:
 ```bash
 git clone https://github.com/Rkarama26/Plannerly
+
+
